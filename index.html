@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf8"/>
+    <title>RTC test</title>
+</head>
+<body>
+<h1>RTC</h1>
+
+<div>
+    <input id="init-connection" type="button" value="create connection"/><br/>
+    <textarea id="token-offer" rows="15" cols="50"></textarea><br/>
+    <input id="join-connection" type="button" value="join connection"/><br/>
+    <textarea id="token-answer" rows="15" cols="50"></textarea><br/>
+    <input id="validate-connection" type="button" value="validate connection"/><br/>
+</div>
+
+<div id="rtc-content"></div>
+
+    <script type="text/javascript" src="dist/rtc.js"></script>
+    <script type="text/javascript">
+    (function() {
+        var client = ServerlessRTC.createClient();
+        initDOMListeners(client);
+
+        function initDOMListeners(client) {
+            document.getElementById('init-connection').addEventListener('click', function() {
+                client.initDataChannel('test');
+            });
+
+            document.getElementById('join-connection').addEventListener('click', function() {
+                var tokenString = document.getElementById('token-offer').value;
+                client.joinConnection(tokenString);
+            });
+
+            document.getElementById('validate-connection').addEventListener('click', function() {
+                var tokenString = document.getElementById('token-answer').value;
+                client.validateConnection(tokenString);
+            });
+        }
+    }());
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+    "name": "serverlessrtc",
+    "author": "Julien Chichignoud",
+    "description": "Serverless RTC library",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/juchi/serverlessrtc"
+    },
+    "homepage": "http://juchi.github.io/serverlessrtc/",
+    "license": "MIT",
+    "devDependencies": {
+        "grunt": "~0.4.5",
+        "grunt-cli": "~0.1.13",
+        "grunt-contrib-concat": "~0.5.1"
+    },
+    "scripts": {
+        "grunt": "./node_modules/.bin/grunt"
+    }
+}
