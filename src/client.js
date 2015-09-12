@@ -4,26 +4,29 @@ var ServerlessRTC;
 
 function Client() {
     this.pc = null;
+    this.connection = null;
     this.channel = null;
     this.messageHandler = null;
     this.initConnection();
 };
 Client.prototype.initConnection = function(config) {
     config = config || ServerlessRTC.defaultConfiguration;
-    this.pc = createConnection(this, this.config);
+    this.connection = ServerlessRTC.Connection.create(config);
+    this.connection.init(function(e) {this.channel = e.channel; initClientChannel(this);}.bind(this));
+    this.pc = this.connection.pc;
 };
 Client.prototype.initDataChannel = function(name) {
     this.channel = this.pc.createDataChannel(name);
     initClientChannel(this);
-    ServerlessRTC.ConnectionHandler.initConnection(this.pc, ServerlessRTC.displayLocalOffer)
+    this.connection.initiate(ServerlessRTC.displayLocalOffer)
 };
 Client.prototype.joinConnection = function(token) {
     token = JSON.parse(token);
-    ServerlessRTC.ConnectionHandler.joinConnection(this.pc, token, ServerlessRTC.displayLocalAnswer);
+    this.connection.join(token, ServerlessRTC.displayLocalAnswer);
 };
 Client.prototype.validateConnection = function(token) {
     token = JSON.parse(token);
-    ServerlessRTC.ConnectionHandler.validateConnection(this.pc, token);
+    this.connection.validate(token);
 };
 Client.prototype.sendMessage = function(message) {
     if (!this.channel) {
@@ -38,25 +41,6 @@ Client.prototype.receiveMessage = function(message) {
 Client.prototype.setMessageHandler = function(handler) {
     this.messageHandler = handler;
 };
-
-function createConnection(client, configuration) {
-    var pc = new ServerlessRTC.RTCPeerConnection(configuration);
-    pc.ondatachannel = function(e) {
-        client.channel = e.channel;
-        initClientChannel(client);
-    };
-    pc.onicecandidate = function(e) {
-        // only refresh the token for the client initiating the connection
-        if (pc.iceConnectionState == 'new') {
-            ServerlessRTC.displayLocalOffer(pc.localDescription);
-        }
-    };
-    pc.oniceconnectionstatechange = function(e) {
-        console.log(e);
-    };
-
-    return pc;
-}
 
 function initClientChannel(client) {
     var channel = client.channel;
