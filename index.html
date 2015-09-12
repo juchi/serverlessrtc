@@ -20,7 +20,8 @@
     <script type="text/javascript" src="dist/rtc.js"></script>
     <script type="text/javascript">
     (function() {
-        var client = ServerlessRTC.createClient();
+        window.client = ServerlessRTC.createClient();
+        client.setMessageHandler(new ServerlessRTC.MessageHandler());
         initDOMListeners(client);
 
         function initDOMListeners(client) {
