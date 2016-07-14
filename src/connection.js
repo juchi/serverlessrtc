@@ -11,7 +11,7 @@ Connection.create = function(configuration) {
 };
 
 // Initialize the underlying peer connection
-Connection.prototype.init = function(ondatachannel) {
+Connection.prototype.init = function(ondatachannel, oniceconnectionstatechange) {
     var pc = this.pc;
     pc.ondatachannel = ondatachannel;
     pc.onicecandidate = function(e) {
@@ -20,9 +20,7 @@ Connection.prototype.init = function(ondatachannel) {
             ServerlessRTC.displayLocalOffer(pc.localDescription);
         }
     };
-    pc.oniceconnectionstatechange = function(e) {
-        console.log(e);
-    };
+    pc.oniceconnectionstatechange = oniceconnectionstatechange;
 };
 
 // Create an offer in order to start a new peer session
@@ -45,6 +43,7 @@ Connection.prototype.join = function(offer, descriptionCallback) {
         }, ServerlessRTC.errorDisplay);
     }, ServerlessRTC.errorDisplay);
 };
+
 Connection.prototype.validate = function(answer) {
     var answerDesc = new ServerlessRTC.RTCSessionDescription(answer);
     this.pc.setRemoteDescription(answerDesc, function(){}, ServerlessRTC.errorDisplay);

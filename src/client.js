@@ -12,9 +12,21 @@ function Client() {
 Client.prototype.initConnection = function(config) {
     config = config || ServerlessRTC.defaultConfiguration;
     this.connection = ServerlessRTC.Connection.create(config);
-    this.connection.init(function(e) {this.channel = e.channel; initClientChannel(this);}.bind(this));
+    this.connection.init(this.onDataChannel.bind(this), this.onConnectionStateChange.bind(this));
     this.pc = this.connection.pc;
 };
+Client.prototype.onDataChannel = function(e) {
+    this.channel = e.channel;
+    initClientChannel(this);
+};
+
+Client.prototype.onConnectionStateChange = function(e) {
+    this.showStatus(e.target.iceConnectionState);
+};
+Client.prototype.showStatus = function(status) {
+    document.getElementById('status').textContent = status;
+};
+
 Client.prototype.initDataChannel = function(name) {
     this.channel = this.pc.createDataChannel(name);
     initClientChannel(this);
