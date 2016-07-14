@@ -21,12 +21,23 @@ Client.prototype.onConnectionStateChange = function(e) {
 Client.prototype.initConnection = function(name) {
     this.connection.initiate(ServerlessRTC.displayLocalOffer)
 };
-Client.prototype.joinConnection = function(token) {
-    token = JSON.parse(token);
+Client.prototype.joinConnection = function(tokenString) {
+    try {
+        token = JSON.parse(tokenString);
+    } catch (e) {
+        this.showStatus('Invalid token format, connection failed.');
+        return;
+    }
+
     this.connection.join(token, ServerlessRTC.displayLocalAnswer);
 };
-Client.prototype.validateConnection = function(token) {
-    token = JSON.parse(token);
+Client.prototype.validateConnection = function(tokenString) {
+    try {
+        token = JSON.parse(tokenString);
+    } catch (e) {
+        this.showStatus('Invalid token format, connection failed.');
+        return;
+    }
     this.connection.validate(token);
 };
 
