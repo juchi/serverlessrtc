@@ -4,6 +4,8 @@ var ServerlessRTC;
 
 function Connection(configuration) {
     this.pc = new ServerlessRTC.RTCPeerConnection(configuration);
+    this.channel = null;
+    this.onreceivemessage = null;
 }
 
 Connection.create = function(configuration) {
@@ -11,9 +13,9 @@ Connection.create = function(configuration) {
 };
 
 // Initialize the underlying peer connection
-Connection.prototype.init = function(ondatachannel, oniceconnectionstatechange) {
+Connection.prototype.init = function(oniceconnectionstatechange) {
     var pc = this.pc;
-    pc.ondatachannel = ondatachannel;
+    pc.ondatachannel = this.onDataChannel.bind(this);
     pc.onicecandidate = function(e) {
         // only refresh the token for the client initiating the connection
         if (pc.iceConnectionState == 'new') {
@@ -23,8 +25,25 @@ Connection.prototype.init = function(ondatachannel, oniceconnectionstatechange) 
     pc.oniceconnectionstatechange = oniceconnectionstatechange;
 };
 
+Connection.prototype.onDataChannel = function(e) {
+    this.channel = e.channel;
+    initChannel(this);
+};
+
+function initChannel(connection) {
+    var channel = connection.channel;
+    channel.onopen    = function(){console.log('data channel open')};
+    channel.onmessage = function(e){connection.onreceivemessage(e.data);};
+    channel.onclose   = function(){console.log('data channel close')};
+    channel.onerror   = function(){console.log('data channel error')};
+}
+
+
 // Create an offer in order to start a new peer session
 Connection.prototype.initiate = function(descriptionCallback) {
+    this.channel = this.pc.createDataChannel(name);
+    initChannel(this);
+
     var pc = this.pc;
     pc.createOffer(function(offer) {
         pc.setLocalDescription(offer, function() {
@@ -47,6 +66,15 @@ Connection.prototype.join = function(offer, descriptionCallback) {
 Connection.prototype.validate = function(answer) {
     var answerDesc = new ServerlessRTC.RTCSessionDescription(answer);
     this.pc.setRemoteDescription(answerDesc, function(){}, ServerlessRTC.errorDisplay);
+};
+
+
+Connection.prototype.sendMessage = function(message) {
+    if (!this.channel) {
+        ServerlessRTC.errorDisplay('The connection has not yet been established.');
+        return;
+    }
+    this.channel.send(message);
 };
 
 ServerlessRTC.Connection = Connection;

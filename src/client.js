@@ -3,33 +3,22 @@ var ServerlessRTC;
 "use strict";
 
 function Client() {
-    this.pc = null;
     this.connection = null;
     this.channel = null;
     this.messageHandler = null;
-    this.initConnection();
+    this.createConnection();
 };
-Client.prototype.initConnection = function(config) {
+Client.prototype.createConnection = function(config) {
     config = config || ServerlessRTC.defaultConfiguration;
     this.connection = ServerlessRTC.Connection.create(config);
-    this.connection.init(this.onDataChannel.bind(this), this.onConnectionStateChange.bind(this));
-    this.pc = this.connection.pc;
-};
-Client.prototype.onDataChannel = function(e) {
-    this.channel = e.channel;
-    initClientChannel(this);
+    this.connection.init(this.onConnectionStateChange.bind(this));
+    this.connection.onreceivemessage = this.receiveMessage.bind(this);
 };
 
 Client.prototype.onConnectionStateChange = function(e) {
     this.showStatus(e.target.iceConnectionState);
 };
-Client.prototype.showStatus = function(status) {
-    document.getElementById('status').textContent = status;
-};
-
-Client.prototype.initDataChannel = function(name) {
-    this.channel = this.pc.createDataChannel(name);
-    initClientChannel(this);
+Client.prototype.initConnection = function(name) {
     this.connection.initiate(ServerlessRTC.displayLocalOffer)
 };
 Client.prototype.joinConnection = function(token) {
@@ -40,27 +29,24 @@ Client.prototype.validateConnection = function(token) {
     token = JSON.parse(token);
     this.connection.validate(token);
 };
+
 Client.prototype.sendMessage = function(message) {
-    if (!this.channel) {
-        ServerlessRTC.errorDisplay('The connection has not yet been established.');
-        return;
-    }
-    this.channel.send(message);
+    this.connection.sendMessage(message);
 };
 Client.prototype.receiveMessage = function(message) {
-    this.messageHandler.receive(message);
+    if (this.messageHandler) {
+        this.messageHandler.receive(message);
+    } else {
+        console.error('No message handler has been defined for this client.');
+    }
 };
 Client.prototype.setMessageHandler = function(handler) {
     this.messageHandler = handler;
 };
 
-function initClientChannel(client) {
-    var channel = client.channel;
-    channel.onopen    = function(){console.log('data channel open')};
-    channel.onmessage = function(e){client.receiveMessage(e.data);};
-    channel.onclose   = function(){console.log('data channel close')};
-    channel.onerror   = function(){console.log('data channel error')};
-}
+Client.prototype.showStatus = function(status) {
+    document.getElementById('status').textContent = status;
+};
 
 ServerlessRTC.Client = Client;
 }(ServerlessRTC || (ServerlessRTC = {})));
