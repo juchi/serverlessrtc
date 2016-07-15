@@ -15,11 +15,12 @@ Connection.create = function(configuration) {
 // Initialize the underlying peer connection
 Connection.prototype.init = function(oniceconnectionstatechange) {
     var pc = this.pc;
+    var self = this;
     pc.ondatachannel = this.onDataChannel.bind(this);
     pc.onicecandidate = function(e) {
         // only refresh the token for the client initiating the connection
         if (pc.iceConnectionState == 'new') {
-            ServerlessRTC.displayLocalOffer(pc.localDescription);
+            self.onLocalOffer(pc.localDescription);
         }
     };
     pc.oniceconnectionstatechange = oniceconnectionstatechange;
@@ -40,25 +41,27 @@ function initChannel(connection) {
 
 
 // Create an offer in order to start a new peer session
-Connection.prototype.initiate = function(descriptionCallback) {
+Connection.prototype.initiate = function() {
     this.channel = this.pc.createDataChannel(name);
     initChannel(this);
 
     var pc = this.pc;
+    var self = this;
     pc.createOffer(function(offer) {
         pc.setLocalDescription(offer, function() {
-            descriptionCallback(pc.localDescription);
+            self.onLocalOffer(pc.localDescription);
         }, ServerlessRTC.errorDisplay);
     }, ServerlessRTC.errorDisplay);
 };
 
-Connection.prototype.join = function(offer, descriptionCallback) {
+Connection.prototype.join = function(offer) {
     var pc = this.pc;
+    var self = this;
     var offerDesc = new ServerlessRTC.RTCSessionDescription(offer);
     pc.setRemoteDescription(offerDesc, function(){}, ServerlessRTC.errorDisplay);
     pc.createAnswer(function(answer) {
         pc.setLocalDescription(answer, function() {
-            descriptionCallback(pc.localDescription);
+            self.onLocalAnswer(pc.localDescription);
         }, ServerlessRTC.errorDisplay);
     }, ServerlessRTC.errorDisplay);
 };

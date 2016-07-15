@@ -6,38 +6,26 @@ function Client() {
     this.connection = null;
     this.channel = null;
     this.messageHandler = null;
-    this.createConnection();
 };
 Client.prototype.createConnection = function(config) {
     config = config || ServerlessRTC.defaultConfiguration;
     this.connection = ServerlessRTC.Connection.create(config);
-    this.connection.init(this.onConnectionStateChange.bind(this));
     this.connection.onreceivemessage = this.receiveMessage.bind(this);
+    this.connection.onLocalOffer = this.onLocalOffer;
+    this.connection.onLocalAnswer = this.onLocalAnswer;
+    this.connection.init(this.onConnectionStateChange.bind(this));
 };
 
 Client.prototype.onConnectionStateChange = function(e) {
     this.showStatus(e.target.iceConnectionState);
 };
-Client.prototype.initConnection = function(name) {
-    this.connection.initiate(ServerlessRTC.displayLocalOffer)
+Client.prototype.initConnection = function() {
+    this.connection.initiate();
 };
-Client.prototype.joinConnection = function(tokenString) {
-    try {
-        token = JSON.parse(tokenString);
-    } catch (e) {
-        this.showStatus('Invalid token format, connection failed.');
-        return;
-    }
-
-    this.connection.join(token, ServerlessRTC.displayLocalAnswer);
+Client.prototype.joinConnection = function(token) {
+    this.connection.join(token);
 };
-Client.prototype.validateConnection = function(tokenString) {
-    try {
-        token = JSON.parse(tokenString);
-    } catch (e) {
-        this.showStatus('Invalid token format, connection failed.');
-        return;
-    }
+Client.prototype.validateConnection = function(token) {
     this.connection.validate(token);
 };
 

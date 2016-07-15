@@ -8,12 +8,6 @@ ServerlessRTC.createClient = function() {
 ServerlessRTC.errorDisplay = function(err) {
     console.error(err);
 };
-ServerlessRTC.displayLocalOffer = function(description) {
-    document.getElementById('token-offer').value = JSON.stringify(description);
-};
-ServerlessRTC.displayLocalAnswer = function(description) {
-    document.getElementById('token-answer').value = JSON.stringify(description);
-};
 // google STUN server
 var googleStunUrl = "stun:stun.l.google.com:19302";
 ServerlessRTC.defaultConfiguration = {"iceServers":[{"urls":googleStunUrl}]};

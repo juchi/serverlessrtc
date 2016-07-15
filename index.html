@@ -23,21 +23,42 @@
     (function() {
         window.client = ServerlessRTC.createClient();
         client.setMessageHandler(new ServerlessRTC.MessageHandler());
+
+        client.onLocalOffer = function(description) {
+            document.getElementById('token-offer').value = JSON.stringify(description);
+        };
+        client.onLocalAnswer = function(description) {
+            document.getElementById('token-answer').value = JSON.stringify(description);
+        };
+        client.createConnection();
+
         initDOMListeners(client);
 
         function initDOMListeners(client) {
             document.getElementById('init-connection').addEventListener('click', function() {
-                client.initConnection('test');
+                client.initConnection();
             });
 
             document.getElementById('join-connection').addEventListener('click', function() {
                 var tokenString = document.getElementById('token-offer').value;
-                client.joinConnection(tokenString);
+                try {
+                    token = JSON.parse(tokenString);
+                } catch (e) {
+                    client.showStatus('Invalid token format, connection failed.');
+                    return;
+                }
+                client.joinConnection(token);
             });
 
             document.getElementById('validate-connection').addEventListener('click', function() {
                 var tokenString = document.getElementById('token-answer').value;
-                client.validateConnection(tokenString);
+                try {
+                    token = JSON.parse(tokenString);
+                } catch (e) {
+                    client.showStatus('Invalid token format, connection failed.');
+                    return;
+                }
+                client.validateConnection(token);
             });
         }
     }());
