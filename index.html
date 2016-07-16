@@ -23,6 +23,9 @@
     (function() {
         window.client = ServerlessRTC.createClient();
         client.setMessageHandler(new ServerlessRTC.MessageHandler());
+        client.statusHandler = function(status) {
+            document.getElementById('status').textContent = status;
+        };
 
         client.onLocalOffer = function(description) {
             document.getElementById('token-offer').value = JSON.stringify(description);

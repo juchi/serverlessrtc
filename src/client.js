@@ -6,6 +6,7 @@ function Client() {
     this.connection = null;
     this.channel = null;
     this.messageHandler = null;
+    this.statusHandler = function () {};
 };
 Client.prototype.createConnection = function(config) {
     config = config || ServerlessRTC.defaultConfiguration;
@@ -21,6 +22,7 @@ Client.prototype.onConnectionStateChange = function(e) {
 };
 Client.prototype.initConnection = function() {
     this.connection.initiate();
+    this.showStatus('Connection initiated');
 };
 Client.prototype.joinConnection = function(token) {
     this.connection.join(token);
@@ -44,7 +46,7 @@ Client.prototype.setMessageHandler = function(handler) {
 };
 
 Client.prototype.showStatus = function(status) {
-    document.getElementById('status').textContent = status;
+    this.statusHandler(status);
 };
 
 ServerlessRTC.Client = Client;
